@@ -29,38 +29,24 @@ classdef Database < handle
         end
         
         function medismiss(DB,merchandise)
-            for i = 1:size(DB.merchandiseList(:,1))
+            i = 1;
+            while i <= size(DB.merchandiseList(:,1))
                 if DB.merchandiseList(i,1).duetime == merchandise.duetime
                     DB.merchandiseList(i,:) = [];
+                    
                     break;
                 end
-            end
+                i = i + 1;
+            end  
         end
         
-        function updatemerchaniseList(DB,od)
-            for i = 1:(size(od(:,1))-1)
-                for j = 1:size(DB.merchandiseList(:,1))
-                    if strcmp(od{i,1},DB.merchandiseList(j,1).name)
-                     DB.merchandiseList(j,1).amount = DB.merchandiseList(j,1).amount - od{i,2};
-                     if DB.merchandiseList(j,1).amount <= 0
-                         DB.merchandiseList(j,:) = [];
-                     end
-                    end
-                    break;
-                end
-            end
-        end
-        
-        function merchandise = displayMerchandise(DB,name)
-            merchandise = Merchandise;
-            merchandise.price = 0;
-            merchandise.amount = 0;
+        function price = displayPrice(DB,name)
+            price = 0;
             for i = 1:size(DB.merchandiseList(:,1))
                 if strcmp(DB.merchandiseList(i,1).name,name)
-                    merchandise = DB.merchandiseList(i,1);
+                    price = DB.merchandiseList(i,1).price;
                 end
             end
         end
-        
     end
 end

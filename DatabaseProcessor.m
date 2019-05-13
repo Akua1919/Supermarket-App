@@ -18,6 +18,9 @@ classdef DatabaseProcessor < handle
             op.object= object;
             op.Time=datestr(now,'yyyy/mm/dd HH:MM:SS');
             process.Database.opregister(op);
+            if strcmp(action,'结算')
+                process.Database.updatemerchaniseList(object);
+            end
         end
         
         function em=createEmployee(process,name,worknumber,password,work,worktime)
@@ -60,7 +63,8 @@ classdef DatabaseProcessor < handle
         end
         
         function updateMerchandise(process)
-            tempdata = process.managerApp.GoodTable.Data;            
+            tempdata = [];
+            process.managerApp.GoodTable.Data = tempdata;        
             for i =1:size(process.Database.merchandiseList(:,1))
                 if isempty(tempdata)
                     tempdata = {process.Database.merchandiseList(i,1).name,process.Database.merchandiseList(i,1).price,process.Database.merchandiseList(i,1).cost,process.Database.merchandiseList(i,1).duetime,process.Database.merchandiseList(i,1).amount};
@@ -69,10 +73,11 @@ classdef DatabaseProcessor < handle
                 end
             end
             process.managerApp.GoodTable.Data = tempdata;
-        end
+        end   %处理过期产品
         
         function updateEmployee(process)
-            tempdata = process.managerApp.EmployeeTable.Data;            
+            tempdata = [];           
+            process.managerApp.EmployeeTable.Data = tempdata;
             for i =1:size(process.Database.employeeList(:,1))
                 if isempty(tempdata)
                     tempdata = {process.Database.employeeList(i,1).worknumber,process.Database.employeeList(i,1).name,process.Database.employeeList(i,1).work,process.Database.employeeList(i,1).worktime};
@@ -81,6 +86,17 @@ classdef DatabaseProcessor < handle
                 end
             end
             process.managerApp.EmployeeTable.Data = tempdata;
+        end
+        
+        function updateOperation(process)
+            process.managerApp.OperationListTable.Data = [];
+            if size(process.Database.operationList) == 0
+                return;
+            end
+            
+            for i =1:size(process.Database.operationList(:,1))
+                process.displayOperation(process.Database.operationList(i,1));
+            end
         end
         
         function managerlogin(process,worknumber,password)
@@ -117,16 +133,16 @@ classdef DatabaseProcessor < handle
             process.eloginApp.Panel_2.Visible = 1;
         end
         
-        function displayPrice1(process,name)
-            price = process.Database.displayPrice(name);
-            process.cashierApp.price1.Value = price;
+        function displayMerchandise1(process,name)
+            merchandise = process.Database.displayMerchandise(name);
+            process.cashierApp.price1.Value = merchandise.price;
+            process.cashierApp.remaining.Value = merchandise.amount;
         end
         
-        function displayPrice2(process,name)
-            price = process.Database.displayPrice(name);
-            if price > 0
-                process.cashierApp.price2.Value = price;
-            end
+        function displayMerchandise2(process,name)
+            merchandise = process.Database.displayMerchandise(name);
+            process.cashierApp.price1.Value = merchandise.price;
+            process.cashierApp.remaining_2.Value = merchandise.amount;
         end
         
         function displayOperation(process,op)
@@ -183,6 +199,7 @@ classdef DatabaseProcessor < handle
             re = ReceiptUI;
             process.receiptApp = re;
             re.DatabaseProcessor = process;
+            process.receiptApp.Bg.Title = strcat(process.receiptApp.Bg.Title,'-',process.cashierApp.Bg.Title(4:8));
             process.receiptApp.Listtable.Data = od;
         end
         
